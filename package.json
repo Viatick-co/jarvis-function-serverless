@@ -1,0 +1,37 @@
+{
+  "name": "jarvis-function-serverless",
+  "version": "1.0.17",
+  "description": "Serverless dependency for function",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Viatick-co/jarvis-function-serverless.git"
+  },
+  "author": "Nick Viatick",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Viatick-co/jarvis-function-serverless/issues"
+  },
+  "homepage": "https://github.com/Viatick-co/jarvis-function-serverless#readme",
+  "prepare": "npm run build",
+  "scripts": {
+    "test": "ts-node ./src/test.ts",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/busboy": "^1.5.0",
+    "@types/node": "^18.15.11",
+    "typescript": "^5.0.3"
+  },
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "moment-timezone": "^0.5.43",
+    "sequelize": "^6.30.0",
+    "sequelize-typescript": "^2.1.5",
+    "url": "^0.11.0"
+  }
+}
