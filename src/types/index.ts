@@ -12,12 +12,22 @@ type RequestBodyPayload = {
   [key : string] : any;
 };
 
-interface JsonResponse { [key : string] : any };
+type RequestUploadFile = {
+  data : Buffer,
+  fileName : string,
+  contentType : string,
+  encoding : string
+};
+
+
+interface JsonResponse {
+  [key : string] : any;
+};
 
 class StreamResponse {
   contentType : string;
   cacheControl : string;
-  readableStream : stream.Readable
+  readableStream : stream.Readable;
 
   constructor(contentType : string, cacheControl : string, readableStream : stream.Readable) {
     this.contentType = contentType;
@@ -27,7 +37,12 @@ class StreamResponse {
 }
 
 interface RouteHandler {
-  (path : string, headers : RequestHeaders, params : RequestParams, body : { [key : string] : any }) : Promise<{ [key : string] : any } | StreamResponse>;
+  (
+    path : string,
+    headers : RequestHeaders,
+    params : RequestParams,
+    body : RequestBodyPayload
+  ) : Promise<{ [key : string] : any } | StreamResponse>;
 }
 
 enum ApiErrorCode {
@@ -59,9 +74,10 @@ export {
   RequestParams,
   RequestHeaders,
   RequestBodyPayload,
+  RequestUploadFile,
   JsonResponse,
   StreamResponse,
   RouteHandler,
   ApiErrorCode,
   ServerlessApiError
-}
+};

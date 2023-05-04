@@ -1,3 +1,3 @@
-/// <reference types="node" />
 import { RequestBodyPayload } from "../../types";
-export declare const parseBufferPayload: (contentType: string, body: Buffer) => Promise<RequestBodyPayload>;
+import Buffer from "buffer";
+export declare const parseBufferPayload: (contentType: string, contentLength: string, body: Buffer) => Promise<RequestBodyPayload>;

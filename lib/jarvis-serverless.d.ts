@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { Sequelize } from "sequelize-typescript";
-import { RequestBodyPayload, RouteHandler } from "./types";
+import { RouteHandler } from "./types";
 export declare const serverlessSvcManager: {
     sequelize: Sequelize;
     systemSequelize: Sequelize;
@@ -29,5 +29,5 @@ export declare class JarvisServerless {
     start: (fdk: any) => void;
     healthCheck: RouteHandler;
     route: (path: string, func: RouteHandler, scopes?: string[]) => void;
-    handleRequest: (input: RequestBodyPayload | Buffer, ctx: any) => Promise<unknown>;
+    handleRequest: (input: Buffer, ctx: any) => Promise<unknown>;
 }

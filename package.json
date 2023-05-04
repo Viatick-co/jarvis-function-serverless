@@ -1,6 +1,6 @@
 {
   "name": "jarvis-function-serverless",
-  "version": "1.0.17",
+  "version": "1.0.28",
   "description": "Serverless dependency for function",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -31,7 +31,6 @@
     "busboy": "^1.6.0",
     "moment-timezone": "^0.5.43",
     "sequelize": "^6.30.0",
-    "sequelize-typescript": "^2.1.5",
-    "url": "^0.11.0"
+    "sequelize-typescript": "^2.1.5"
   }
 }

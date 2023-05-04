@@ -1,4 +1,5 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import stream from "stream";
 type RequestParams = {
     [key: string]: string | string[] | undefined;
@@ -8,6 +9,12 @@ type RequestHeaders = {
 };
 type RequestBodyPayload = {
     [key: string]: any;
+};
+type RequestUploadFile = {
+    data: Buffer;
+    fileName: string;
+    contentType: string;
+    encoding: string;
 };
 interface JsonResponse {
     [key: string]: any;
@@ -19,9 +26,7 @@ declare class StreamResponse {
     constructor(contentType: string, cacheControl: string, readableStream: stream.Readable);
 }
 interface RouteHandler {
-    (path: string, headers: RequestHeaders, params: RequestParams, body: {
-        [key: string]: any;
-    }): Promise<{
+    (path: string, headers: RequestHeaders, params: RequestParams, body: RequestBodyPayload): Promise<{
         [key: string]: any;
     } | StreamResponse>;
 }
@@ -42,4 +47,4 @@ declare class ServerlessApiError extends Error {
     code: ApiErrorCode;
     constructor(statusCode: number, code: ApiErrorCode, message: string);
 }
-export { RequestParams, RequestHeaders, RequestBodyPayload, JsonResponse, StreamResponse, RouteHandler, ApiErrorCode, ServerlessApiError };
+export { RequestParams, RequestHeaders, RequestBodyPayload, RequestUploadFile, JsonResponse, StreamResponse, RouteHandler, ApiErrorCode, ServerlessApiError };

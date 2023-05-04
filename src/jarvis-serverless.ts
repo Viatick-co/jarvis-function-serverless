@@ -21,13 +21,11 @@ import {
   ServerlessApiError,
   StreamResponse
 } from "./types";
-import { isBuffer } from "util";
-import * as util from "util";
 import { parseBufferPayload } from "./services/serverless";
 
 export const serverlessSvcManager : {
   sequelize : Sequelize,
-  systemSequelize: Sequelize
+  systemSequelize : Sequelize
 } = {
   sequelize : null,
   systemSequelize : null
@@ -59,7 +57,7 @@ export const initManager = async (
       dbPort,
       dbUsn,
       dbPassword
-    )
+    );
   } else {
     serverlessSvcManager.sequelize.connectionManager.initPools();
     serverlessSvcManager.systemSequelize.connectionManager.initPools();
@@ -79,7 +77,6 @@ const endSession = async () : Promise<void> => {
   await serverlessSvcManager?.sequelize.connectionManager.close();
   await serverlessSvcManager?.systemSequelize.connectionManager.close();
 };
-
 
 export class JarvisServerless {
   routeMap : Record<string, {
@@ -124,7 +121,10 @@ export class JarvisServerless {
 
   start = (fdk) => {
     this.fdk = fdk;
-    this.fdk.handle(this.handleRequest);
+    this.fdk.handle(
+      this.handleRequest,
+      { inputMode : "buffer" }
+    );
     this.route("/health", this.healthCheck);
   };
 
@@ -164,12 +164,12 @@ export class JarvisServerless {
     };
   };
 
-  handleRequest = async (input : RequestBodyPayload | Buffer, ctx) : Promise<unknown> => {
+  handleRequest = async (input : Buffer, ctx) : Promise<unknown> => {
     const hctx = ctx.httpGateway;
     const requestURL = hctx.requestURL;
     const headers : RequestHeaders = hctx.headers;
     let path = "";
-    let params: RequestParams = {};
+    let params : RequestParams = {};
 
     let statusCode = 400;
     let errorMessage = "";
@@ -185,6 +185,7 @@ export class JarvisServerless {
       const parsedUrl = url.parse(requestURL, true);
       params = parsedUrl.query;
       path = parsedUrl.pathname;
+      const contentType = headers["Content-Type"][0] as string;
 
       // for local test
       // const path = this.apiPrefix + "/token-verify";
@@ -199,12 +200,13 @@ export class JarvisServerless {
           } = foundRoute;
 
           let requestPayload : RequestBodyPayload;
-          if (Buffer.isBuffer(input)) {
-            const contentType = headers["Content-Type"][0];
+          if (contentType.startsWith("multipart/form-data")) {
+            const contentLength = headers["Content-Length"][0];
 
-            requestPayload = await  parseBufferPayload(contentType, input);
+            requestPayload = await parseBufferPayload(contentType, contentLength, input );
           } else {
-            requestPayload = { ...input };
+            const inputStr = input?.toString();
+            requestPayload = !!inputStr ? JSON.parse(inputStr) : {};
           }
 
           const rp = await handler(path, headers, params, requestPayload);
@@ -278,7 +280,7 @@ export class JarvisServerless {
             input,
             error?.message,
             error?.stack
-          )
+          );
         }
       } finally {
         await endSession();

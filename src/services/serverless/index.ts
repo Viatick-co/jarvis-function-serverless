@@ -1,23 +1,49 @@
-import busboy, { FileInfo } from "busboy";
-import { RequestBodyPayload } from "../../types";
+import Busboy from "busboy";
+
+import {
+  RequestBodyPayload,
+  RequestUploadFile
+} from "../../types";
 import { Readable } from "stream";
+import Buffer from "buffer";
 
 export const parseBufferPayload = (
   contentType : string,
+  contentLength : string,
   body : Buffer
 ) : Promise<RequestBodyPayload> => new Promise((
   resolve : (value : RequestBodyPayload) => void,
   reject : (reason? : unknown) => void
 ) => {
-  const bb = busboy({ headers : { "content-type" : contentType } });
-  const bodyData : RequestBodyPayload = {
-    files : []
-  };
+  console.log({
+    name : "parseBufferPayload",
+    contentType : contentType,
+    contentLength : contentLength
+  });
 
-  bb.on("file", (name: string, stream: Readable, info: FileInfo) => {
-    const { filename, encoding, mimeType } = info;
+  const busboy = Busboy({
+    headers : {
+      "content-type" : contentType,
+      "content-length" : contentLength
+    }
+  });
 
+  const bodyData : RequestBodyPayload = {};
+
+  busboy.on("file", (fieldname : string, stream : Readable, info : Busboy.FileInfo) => {
     let fileData : Buffer = null;
+
+    const {
+      filename,
+      encoding,
+      mimeType
+    } = info;
+    console.log(
+      `File [${ filename }]: filename: %j, encoding: %j, mimeType: %j`,
+      filename,
+      encoding,
+      mimeType
+    );
 
     stream.on("data", data => {
       fileData = data as Buffer;
@@ -25,7 +51,7 @@ export const parseBufferPayload = (
 
     stream.on("close", () => {
       if (!!fileData) {
-        bodyData.files[filename] = {
+        bodyData[fieldname] = {
           data : fileData,
           fileName : filename,
           contentType : mimeType,
@@ -33,22 +59,21 @@ export const parseBufferPayload = (
         };
       }
     });
+
   });
 
-  bb.on("field", (name: string, value: string) => {
-    bodyData[name] = value;
+  busboy.on("field", (fieldname : string, value : string) => {
+    bodyData[fieldname] = value;
   });
 
-  bb.on("error", (error : Error) => {
+  busboy.on("error", (error : Error) => {
     reject(error);
   });
 
-  bb.on('close', () => {
+  busboy.on("close", () => {
     resolve(bodyData);
   });
 
-  const encoding = "binary";
-
-  bb.write(body, encoding);
-  bb.end();
+  busboy.write(body, "binary");
+  busboy.end();
 });
