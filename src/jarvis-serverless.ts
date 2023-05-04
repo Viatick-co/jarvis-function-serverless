@@ -170,6 +170,7 @@ export class JarvisServerless {
     const headers : RequestHeaders = hctx.headers;
     let path = "";
     let params : RequestParams = {};
+    let requestPayload : RequestBodyPayload = null;
 
     let statusCode = 400;
     let errorMessage = "";
@@ -199,7 +200,6 @@ export class JarvisServerless {
             scopes
           } = foundRoute;
 
-          let requestPayload : RequestBodyPayload;
           if (contentType.startsWith("multipart/form-data")) {
             const contentLength = headers["Content-Length"][0];
 
@@ -277,7 +277,7 @@ export class JarvisServerless {
             this.serviceName,
             path,
             params,
-            input,
+            requestPayload,
             error?.message,
             error?.stack
           );
