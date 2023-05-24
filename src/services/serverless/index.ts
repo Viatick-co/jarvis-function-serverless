@@ -15,12 +15,6 @@ export const parseBufferPayload = (
   resolve : (value : RequestBodyPayload) => void,
   reject : (reason? : unknown) => void
 ) => {
-  console.log({
-    name : "parseBufferPayload",
-    contentType : contentType,
-    contentLength : contentLength
-  });
-
   const busboy = Busboy({
     headers : {
       "content-type" : contentType,

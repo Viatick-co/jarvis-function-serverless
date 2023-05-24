@@ -22,7 +22,7 @@ type RequestUploadFile = {
 
 interface JsonResponse {
   [key : string] : any;
-};
+}
 
 class StreamResponse {
   contentType : string;

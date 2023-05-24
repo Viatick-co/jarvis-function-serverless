@@ -8,7 +8,8 @@ import {
   testSystemDb
 } from "./services/db";
 import {
-  logError
+  logError,
+  logRequest
 } from "./services/system";
 
 import {
@@ -93,6 +94,7 @@ export class JarvisServerless {
   apiPrefix = "";
   modelsPath = "";
   sqlLog = false;
+  requestLog = false;
   fdk : any;
 
   constructor(
@@ -105,7 +107,8 @@ export class JarvisServerless {
     dbUsn : string,
     dbPwd : string,
     modelsPath : string,
-    sqlLog : boolean
+    sqlLog : boolean,
+    requestLog : boolean
   ) {
     this.apiPrefix = apiPrefix;
     this.version = version;
@@ -117,6 +120,7 @@ export class JarvisServerless {
     this.dbPwd = dbPwd;
     this.modelsPath = modelsPath;
     this.sqlLog = sqlLog;
+    this.requestLog = requestLog;
   }
 
   start = (fdk) => {
@@ -179,6 +183,21 @@ export class JarvisServerless {
       message : string,
       stack : string
     } = null;
+
+    let appId = 0;
+    let accountScopes : string[] = [];
+    try {
+      const xApplicationId = headers["X-Application-Id"] as string;
+      appId = !!xApplicationId ? parseInt(xApplicationId) : 0;
+
+      const xAccountScope = headers["X-Account-Scope"] as string;
+      if (!!xAccountScope) {
+        accountScopes = xAccountScope.split(",");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
     try {
       await initManager(this.dbHost, this.dbPort, this.dbName, this.dbUsn, this.dbPwd, this.modelsPath, this.sqlLog);
 
@@ -200,14 +219,18 @@ export class JarvisServerless {
             scopes
           } = foundRoute;
 
+          let logBody : string = null;
           if (contentType.startsWith("multipart/form-data")) {
             const contentLength = headers["Content-Length"][0];
 
             requestPayload = await parseBufferPayload(contentType, contentLength, input );
           } else {
             const inputStr = input?.toString();
+            logBody = inputStr;
             requestPayload = !!inputStr ? JSON.parse(inputStr) : {};
           }
+
+          logRequest(appId, path, params, logBody);
 
           const rp = await handler(path, headers, params, requestPayload);
           statusCode = 200;
@@ -269,9 +292,6 @@ export class JarvisServerless {
         // });
 
         if (statusCode === 500) {
-          const xApplicationId = headers["X-Application-Id"] as string;
-          const appId = !!xApplicationId ? parseInt(xApplicationId) : 0;
-
           await logError(
             appId,
             this.serviceName,

@@ -24,8 +24,9 @@ export declare class JarvisServerless {
     apiPrefix: string;
     modelsPath: string;
     sqlLog: boolean;
+    requestLog: boolean;
     fdk: any;
-    constructor(apiPrefix: string, version: string, serviceName: string, dbHost: string, dbPort: number, dbName: string, dbUsn: string, dbPwd: string, modelsPath: string, sqlLog: boolean);
+    constructor(apiPrefix: string, version: string, serviceName: string, dbHost: string, dbPort: number, dbName: string, dbUsn: string, dbPwd: string, modelsPath: string, sqlLog: boolean, requestLog: boolean);
     start: (fdk: any) => void;
     healthCheck: RouteHandler;
     route: (path: string, func: RouteHandler, scopes?: string[]) => void;
