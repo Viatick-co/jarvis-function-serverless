@@ -18,6 +18,7 @@ import {
   RequestBodyPayload,
   RequestHeaders,
   RequestParams,
+  RequestUser,
   RouteHandler,
   ServerlessApiError,
   StreamResponse
@@ -129,14 +130,15 @@ export class JarvisServerless {
       this.handleRequest,
       { inputMode : "buffer" }
     );
-    this.route("/health", this.healthCheck);
+    this.route("/health", this.healthCheck, ["superAdmin"]);
   };
 
   healthCheck : RouteHandler = async (
     path : string,
     headers : RequestHeaders,
     params : RequestParams,
-    body : RequestBodyPayload
+    body : RequestBodyPayload,
+    requestUser : RequestUser
   ) : Promise<JsonResponse> => {
 
     return {
@@ -153,6 +155,7 @@ export class JarvisServerless {
         usn : this.dbUsn,
         apiPrefix : this.apiPrefix
       },
+      requestUser,
       time : moment().toISOString()
     };
   };
@@ -186,16 +189,29 @@ export class JarvisServerless {
 
     let appId = 0;
     let accountScopes : string[] = [];
+    let accountId = 0;
     try {
-      const xApplicationId = headers["X-Application-Id"] as string;
-      appId = !!xApplicationId ? parseInt(xApplicationId) : 0;
+      const xAccountId = headers["X-Account-Id"] as string[];
+      accountId = !!xAccountId ? parseInt(xAccountId[0]) : 0;
 
-      const xAccountScope = headers["X-Account-Scope"] as string;
-      if (!!xAccountScope) {
-        accountScopes = xAccountScope.split(",");
+      const xApplicationId = headers["X-Application-Id"] as string[];
+      appId = !!xApplicationId ? parseInt(xApplicationId[0]) : 0;
+
+      const xAccountScope = headers["X-Account-Scope"] as string[];
+      if (!!xAccountScope && xAccountScope.length > 0) {
+        accountScopes = xAccountScope[0].split(",");
       }
     } catch (e) {
       console.error(e);
+    }
+
+    let rqUser : RequestUser = null;
+    if (accountId > 0) {
+      rqUser = {
+        id : accountId,
+        scopes : accountScopes,
+        applicationId  : appId
+      };
     }
 
     try {
@@ -249,7 +265,7 @@ export class JarvisServerless {
 
             logRequest(appId, path, params, logBody);
 
-            const rp = await handler(path, headers, params, requestPayload);
+            const rp = await handler(path, headers, params, requestPayload, rqUser);
             statusCode = 200;
             if (rp instanceof StreamResponse) {
               const {

@@ -12,6 +12,12 @@ type RequestBodyPayload = {
   [key : string] : any;
 };
 
+type RequestUser = {
+  id : number,
+  applicationId : number,
+  scopes : string[]
+}
+
 type RequestUploadFile = {
   data : Buffer,
   fileName : string,
@@ -41,7 +47,8 @@ interface RouteHandler {
     path : string,
     headers : RequestHeaders,
     params : RequestParams,
-    body : RequestBodyPayload
+    body : RequestBodyPayload,
+    userData : RequestUser
   ) : Promise<{ [key : string] : any } | StreamResponse>;
 }
 
@@ -73,6 +80,7 @@ class ServerlessApiError extends Error {
 export {
   RequestParams,
   RequestHeaders,
+  RequestUser,
   RequestBodyPayload,
   RequestUploadFile,
   JsonResponse,

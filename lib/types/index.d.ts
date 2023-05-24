@@ -10,6 +10,11 @@ type RequestHeaders = {
 type RequestBodyPayload = {
     [key: string]: any;
 };
+type RequestUser = {
+    id: number;
+    applicationId: number;
+    scopes: string[];
+};
 type RequestUploadFile = {
     data: Buffer;
     fileName: string;
@@ -26,7 +31,7 @@ declare class StreamResponse {
     constructor(contentType: string, cacheControl: string, readableStream: stream.Readable);
 }
 interface RouteHandler {
-    (path: string, headers: RequestHeaders, params: RequestParams, body: RequestBodyPayload): Promise<{
+    (path: string, headers: RequestHeaders, params: RequestParams, body: RequestBodyPayload, userData: RequestUser): Promise<{
         [key: string]: any;
     } | StreamResponse>;
 }
@@ -47,4 +52,4 @@ declare class ServerlessApiError extends Error {
     code: ApiErrorCode;
     constructor(statusCode: number, code: ApiErrorCode, message: string);
 }
-export { RequestParams, RequestHeaders, RequestBodyPayload, RequestUploadFile, JsonResponse, StreamResponse, RouteHandler, ApiErrorCode, ServerlessApiError };
+export { RequestParams, RequestHeaders, RequestUser, RequestBodyPayload, RequestUploadFile, JsonResponse, StreamResponse, RouteHandler, ApiErrorCode, ServerlessApiError };

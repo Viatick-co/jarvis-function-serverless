@@ -1,6 +1,6 @@
 {
   "name": "jarvis-function-serverless",
-  "version": "1.0.33",
+  "version": "1.1.2",
   "description": "Serverless dependency for function",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
