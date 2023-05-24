@@ -130,7 +130,7 @@ export class JarvisServerless {
       this.handleRequest,
       { inputMode : "buffer" }
     );
-    this.route("/health", this.healthCheck, ["superAdmin"]);
+    this.route("/health", this.healthCheck);
   };
 
   healthCheck : RouteHandler = async (
