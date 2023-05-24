@@ -190,6 +190,7 @@ export class JarvisServerless {
     let appId = 0;
     let accountScopes : string[] = [];
     let accountId = 0;
+
     try {
       const xAccountId = headers["X-Account-Id"] as string[];
       accountId = !!xAccountId ? parseInt(xAccountId[0]) : 0;
