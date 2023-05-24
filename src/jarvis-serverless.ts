@@ -219,36 +219,58 @@ export class JarvisServerless {
             scopes
           } = foundRoute;
 
-          let logBody : string = null;
-          if (contentType.startsWith("multipart/form-data")) {
-            const contentLength = headers["Content-Length"][0];
+          // checking scope
+          let validScope = true;
+          if (!!scopes && scopes.length > 0) {
+            validScope = false;
 
-            requestPayload = await parseBufferPayload(contentType, contentLength, input );
-          } else {
-            const inputStr = input?.toString();
-            logBody = inputStr;
-            requestPayload = !!inputStr ? JSON.parse(inputStr) : {};
+            if (!!accountScopes && accountScopes.length > 0) {
+              for (const scope of scopes) {
+                if (accountScopes.indexOf(scope) >= 0) {
+                  validScope = true;
+                  break;
+                }
+              }
+            }
           }
 
-          logRequest(appId, path, params, logBody);
+          if (validScope) {
+            // if valid scope then continue
+            let logBody : string = null;
+            if (contentType.startsWith("multipart/form-data")) {
+              const contentLength = headers["Content-Length"][0];
 
-          const rp = await handler(path, headers, params, requestPayload);
-          statusCode = 200;
-          if (rp instanceof StreamResponse) {
-            const {
-              readableStream,
-              contentType,
-              cacheControl
-            } = rp;
+              requestPayload = await parseBufferPayload(contentType, contentLength, input );
+            } else {
+              const inputStr = input?.toString();
+              logBody = inputStr;
+              requestPayload = !!inputStr ? JSON.parse(inputStr) : {};
+            }
 
-            ctx.responseContentType = contentType;
+            logRequest(appId, path, params, logBody);
 
-            const hctx = ctx.httpGateway;
-            hctx.setResponseHeader("Cache-Control", cacheControl);
+            const rp = await handler(path, headers, params, requestPayload);
+            statusCode = 200;
+            if (rp instanceof StreamResponse) {
+              const {
+                readableStream,
+                contentType,
+                cacheControl
+              } = rp;
 
-            return this.fdk.streamResult(readableStream);
+              ctx.responseContentType = contentType;
+
+              const hctx = ctx.httpGateway;
+              hctx.setResponseHeader("Cache-Control", cacheControl);
+
+              return this.fdk.streamResult(readableStream);
+            } else {
+              return rp;
+            }
           } else {
-            return rp;
+            statusCode = 403;
+            rpCode = ApiErrorCode.DISABLED_ACCESS;
+            errorMessage = "Scope is invalid!";
           }
         } catch (e) {
           if (e instanceof ServerlessApiError) {
